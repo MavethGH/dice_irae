@@ -36,3 +36,13 @@ fn test_1d20() {
     let actual = eval(&ast, &mut rng()).unwrap();
     assert_eq!(expected, actual);
 }
+
+#[test]
+fn test_negation() {
+    let minus1 = roll_str("-1").unwrap();
+    assert_eq!(minus1, -1);
+
+    let minus1d20 = roll_str_with_rng("-1d20", &mut rng()).unwrap();
+    let plus1d20 = roll_str_with_rng("1d20", &mut rng()).unwrap();
+    assert_eq!(-plus1d20, minus1d20);
+}

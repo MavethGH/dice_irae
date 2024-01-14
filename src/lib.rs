@@ -22,7 +22,7 @@ pub fn roll_str(dice_string: &str) -> Result<i32, DiceError> {
 }
 
 #[derive(Debug, PartialEq, Eq)]
-pub enum Expr {
+enum Expr {
     Constant(i32),
     DieRoll(Box<Expr>, Box<Expr>),
     Neg(Box<Expr>),
@@ -49,11 +49,16 @@ fn parser() -> impl Parser<char, Expr, Error = Simple<char>> {
             .map(|(lhs, (_, rhs))| Expr::DieRoll(Box::new(lhs), Box::new(rhs)))
             .or(atom);
 
-        let pow = roll
+        let unary = operator('-')
+            .repeated()
+            .then(roll)
+            .foldr(|_op, rhs| Expr::Neg(Box::new(rhs)));
+
+        let pow = unary
             .clone()
-            .then(operator('^').then(roll.clone()))
+            .then(operator('^').then(unary.clone()))
             .map(|(lhs, (_, rhs))| Expr::Pow(Box::new(lhs), Box::new(rhs)))
-            .or(roll);
+            .or(unary);
 
         let product = pow
             .clone()
